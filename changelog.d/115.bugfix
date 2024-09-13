@@ -1,0 +1,1 @@
+Fix reconnect loop due to the close listener being called on socket destruction.
