@@ -1272,6 +1272,7 @@ export class Client extends (EventEmitter as unknown as new () => TypedEmitter<C
 
         // destroy old socket before allocating a new one
         if (this.isOurSocket && this.conn) {
+            this.unbindListeners();
             this.conn.destroy();
             this.conn = undefined;
         }
@@ -1425,6 +1426,14 @@ export class Client extends (EventEmitter as unknown as new () => TypedEmitter<C
         });
     }
 
+    private unbindListeners() {
+        (
+            ['data', 'end', 'close', 'timeout', 'error'] as (keyof IrcConnectionEventsMap)[]
+        ).forEach(evtType => {
+            this.conn?.removeAllListeners(evtType);
+        });
+    }
+
     private reconnect(retryCount: number) {
         if (!this.isOurSocket) {
             // Cannot reconnect if the socket is not ours.
@@ -1455,11 +1464,7 @@ export class Client extends (EventEmitter as unknown as new () => TypedEmitter<C
      */
     public destroy() {
         util.log('Destroying connection');
-        (
-            ['data', 'end', 'close', 'timeout', 'error'] as (keyof IrcConnectionEventsMap)[]
-        ).forEach(evtType => {
-            this.conn?.removeAllListeners(evtType);
-        });
+        this.unbindListeners();
         if (this.isOurSocket) {
             this.disconnect();
         }
