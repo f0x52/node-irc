@@ -219,12 +219,12 @@ export class Client extends (EventEmitter as unknown as new () => TypedEmitter<C
         if (opt.channelPrefixes) {
             this.state.supportedState.channel.types = opt.channelPrefixes;
         }
-        this.state.capabilities.once('serverCapabilitesReady', () => {
+        this.state.capabilities.on('serverCapabilitesReady', () => {
             this.onCapsList();
             // Flush on capabilities modified
             this.state.flush?.();
         })
-        this.state.capabilities.once('userCapabilitesReady', () => {
+        this.state.capabilities.on('userCapabilitesReady', () => {
             this.onCapsConfirmed();
             // Flush on capabilities modified
             this.state.flush?.();

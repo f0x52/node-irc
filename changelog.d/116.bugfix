@@ -1,0 +1,1 @@
+Fix auto reconnect due to event listeners not being called.
