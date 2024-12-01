@@ -90,6 +90,7 @@ export interface ChanData {
      * nick => mode
      */
     users: Map<string, string>,
+    tmpUsers: Map<string, string>, // used while processing NAMES replies
     mode: string;
     modeParams: Map<string, string[]>,
     topic?: string;

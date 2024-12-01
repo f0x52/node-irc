@@ -684,25 +684,29 @@ export class Client extends (EventEmitter as unknown as new () => TypedEmitter<C
                     }
                 }
                 if (knownPrefixes.length > 0) {
-                    channel.users.set(match[2], knownPrefixes);
+                    channel.tmpUsers.set(match[2], knownPrefixes);
                 }
                 else {
                     // recombine just in case this server allows weird chars in the nick.
                     // We know it isn't a mode char.
-                    channel.users.set(match[1] + match[2], '');
+                    channel.tmpUsers.set(match[1] + match[2], '');
                 }
             }
         });
-        // If the channel user list was modified, flush.
-        if (users.length) {
-            this.state.flush?.()
-        }
     }
 
     private onReplyNameEnd(message: Message) {
         this._casemap(message, 1);
         const channel = this.chanData(message.args[1]);
         if (channel) {
+            channel.users.clear();
+            channel.tmpUsers.forEach((modes, user) => {
+                channel.users.set(user, modes);
+            });
+            channel.tmpUsers.clear();
+
+            this.state.flush?.();
+
             this.emit('names', message.args[1], channel.users);
             this._send('MODE', message.args[1]);
         }
@@ -1166,6 +1170,7 @@ export class Client extends (EventEmitter as unknown as new () => TypedEmitter<C
                 key: key,
                 serverName: name,
                 users: new Map(),
+                tmpUsers: new Map(),
                 mode: '',
                 modeParams: new Map(),
             });
