@@ -158,6 +158,7 @@ export class Client extends (EventEmitter as unknown as new () => TypedEmitter<C
     private motd? = "";
     private channelListState?: ChanListItem[];
     private buffer = Buffer.alloc(0);
+    private newNamesByChannel = new Map<string, Map<string, string>>();
 
     private readonly state: IrcClientState;
 
@@ -667,6 +668,13 @@ export class Client extends (EventEmitter as unknown as new () => TypedEmitter<C
             // No users
             return;
         }
+
+        let newNames = this.newNamesByChannel.get(channel.key);
+        if (!newNames) {
+            newNames = new Map();
+            this.newNamesByChannel.set(channel.key, newNames);
+        }
+
         const users = message.args[3].trim().split(/ +/);
         users.forEach(user => {
             // user = "@foo", "+foo", "&@foo", etc...
@@ -684,12 +692,12 @@ export class Client extends (EventEmitter as unknown as new () => TypedEmitter<C
                     }
                 }
                 if (knownPrefixes.length > 0) {
-                    channel.tmpUsers.set(match[2], knownPrefixes);
+                    newNames.set(match[2], knownPrefixes);
                 }
                 else {
                     // recombine just in case this server allows weird chars in the nick.
                     // We know it isn't a mode char.
-                    channel.tmpUsers.set(match[1] + match[2], '');
+                    newNames.set(match[1] + match[2], '');
                 }
             }
         });
@@ -699,16 +707,19 @@ export class Client extends (EventEmitter as unknown as new () => TypedEmitter<C
         this._casemap(message, 1);
         const channel = this.chanData(message.args[1]);
         if (channel) {
-            channel.users.clear();
-            channel.tmpUsers.forEach((modes, user) => {
-                channel.users.set(user, modes);
-            });
-            channel.tmpUsers.clear();
-
-            this.state.flush?.();
-
-            this.emit('names', message.args[1], channel.users);
-            this._send('MODE', message.args[1]);
+            const newNames = this.newNamesByChannel.get(channel.key);
+            if (newNames) {
+                channel.users.clear();
+                newNames.forEach((modes, user) => {
+                    channel.users.set(user, modes);
+                });
+                newNames.clear();
+    
+                this.state.flush?.();
+    
+                this.emit('names', message.args[1], channel.users);
+                this._send('MODE', message.args[1]);
+            }
         }
     }
 
@@ -1170,7 +1181,6 @@ export class Client extends (EventEmitter as unknown as new () => TypedEmitter<C
                 key: key,
                 serverName: name,
                 users: new Map(),
-                tmpUsers: new Map(),
                 mode: '',
                 modeParams: new Map(),
             });
