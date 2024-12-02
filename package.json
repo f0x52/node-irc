@@ -1,8 +1,8 @@
 {
-  "name": "matrix-org-irc",
+  "name": "@f0x52/matrix-org-irc",
   "description": "An IRC client library for node, written in Typescript.",
-  "version": "3.0.0",
-  "author": "Matrix.org (original fork from Martyn Smith <martyn@dollyfish.net.nz>)",
+  "version": "3.1.0",
+  "author": "f0x (forked from Matrix.org (original fork from Martyn Smith <martyn@dollyfish.net.nz>))",
   "scripts": {
     "prepare": "yarn run build",
     "build": "tsc --project tsconfig.json",
@@ -17,10 +17,7 @@
   "types": "lib/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "http://github.com/matrix-org/node-irc"
-  },
-  "bugs": {
-    "url": "http://github.com/matrix-org/node-irc/issues"
+    "url": "http://github.com/f0x52/node-irc"
   },
   "main": "lib/index",
   "engines": {
