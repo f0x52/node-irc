@@ -631,9 +631,8 @@ export class Client extends (EventEmitter as unknown as new () => TypedEmitter<C
 
         // finding what channels a user is in
         this.state.chans.forEach((nickChannel, channame) => {
-            const chanUser = message.nick && nickChannel.users.get(message.nick);
-            if (message.nick && chanUser) {
-                nickChannel.users.set(message.args[0], chanUser);
+            if (message.nick && nickChannel.users.has(message.nick)) {
+                nickChannel.users.set(message.args[0], nickChannel.users.get(message.nick)!);
                 nickChannel.users.delete(message.nick);
                 channelsForNick.push(channame);
             }
@@ -714,9 +713,9 @@ export class Client extends (EventEmitter as unknown as new () => TypedEmitter<C
                     channel.users.set(user, modes);
                 });
                 newNames.clear();
-    
+
                 this.state.flush?.();
-    
+
                 this.emit('names', message.args[1], channel.users);
                 this._send('MODE', message.args[1]);
             }
