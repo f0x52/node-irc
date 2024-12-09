@@ -675,6 +675,11 @@ export class Client extends (EventEmitter as unknown as new () => TypedEmitter<C
         }
 
         const users = message.args[3].trim().split(/ +/);
+
+        if (this.opt.debug) {
+            util.log(`partial NAMES for ${channel}: ${users.join(" ")}`);
+        }
+
         users.forEach(user => {
             // user = "@foo", "+foo", "&@foo", etc...
             // The symbols are the prefix set.
@@ -708,6 +713,10 @@ export class Client extends (EventEmitter as unknown as new () => TypedEmitter<C
         if (channel) {
             const newNames = this.newNamesByChannel.get(channel.key);
             if (newNames) {
+                if (this.opt.debug) {
+                    // eslint-disable-next-line max-len
+                    util.log(`updating NAMES for ${channel}, had ${channel.users.size} now ${newNames.size}: ${[...newNames].join(" ")}`);
+                }
                 channel.users.clear();
                 newNames.forEach((modes, user) => {
                     channel.users.set(user, modes);
